@@ -298,7 +298,7 @@ private void showWithBounce(Node node, String axis, double startPos, double boun
             new KeyValue(getTranslateProperty(node, axis), finalPos)
         )
     );
-    bounceIn.play();
+    bounceIn.play(); // test metrici
 }
 
 
@@ -331,3 +331,4 @@ private javafx.beans.property.DoubleProperty getTranslateProperty(Node node, Str
         launch(args);
     }
 }
+
