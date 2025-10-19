@@ -6,20 +6,17 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # necesar pentru rapoartele de blame
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'   # JDK pentru build/scan
-
-      - name: Build (opțional poți sări testele)
-        run: mvn -B -DskipTests package
+          java-version: '17'
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
