@@ -1,4 +1,4 @@
-package TermometruDigital;
+package termometrudigital;
 
 import javafx.animation.FillTransition;
 import javafx.animation.KeyFrame;
@@ -578,3 +578,4 @@ public class MainApp extends Application {
         launch(args);
     }
 }
+
