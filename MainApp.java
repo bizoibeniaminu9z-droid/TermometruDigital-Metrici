@@ -50,7 +50,6 @@ public class MainApp extends Application {
     private Label tempLabel;
     private Rectangle thermometerBar;
     private ImageView alertImageView;
-    private StackPane thermometerStack;
     private ImageView backgroundImageView;
     private ImageView palmier1;
     private ImageView palmier2;
@@ -84,6 +83,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        StackPane thermometerStack = new StackPane();
         tempLabel = new Label("Temperatura: -- °C");
         tempLabel.setFont(new Font("Arial", 32));
 
@@ -578,4 +578,3 @@ public class MainApp extends Application {
         launch(args);
     }
 }
-
