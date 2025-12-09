@@ -312,15 +312,9 @@ public class MainApp extends Application {
     private void handleModeToggle() {
         isManualMode = modeToggle.isSelected();
 
-        if (isManualMode) {
-            modeToggle.setText("Mod manual");
-            fanToggle.setDisable(false);
-            fanThresholdSlider.setDisable(true);
-        } else {
-            modeToggle.setText("Mod automat");
-            fanToggle.setDisable(true);
-            fanThresholdSlider.setDisable(false);
-        }
+        modeToggle.setText(isManualMode ? "Mod manual" : "Mod automat");
+        fanToggle.setDisable(!isManualMode);
+        fanThresholdSlider.setDisable(isManualMode);
     }
 
     // Control manual ventilator
@@ -405,20 +399,24 @@ public class MainApp extends Application {
         );
         timeline.play();
 
-        Color targetColor;
-        if (temperature < 30) {
-            targetColor = Color.BLUE;
-        } else if (temperature < 32) {
-            targetColor = Color.GREEN;
-        } else if (temperature < 34) {
-            targetColor = Color.ORANGE;
-        } else {
-            targetColor = Color.RED;
-        }
+        Color targetColor = getColorForTemperature(temperature);
 
         FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
         fillTransition.setToValue(targetColor);
         fillTransition.play();
+    }
+
+    private Color getColorForTemperature(float temperature) {
+        if (temperature < 30) {
+            return Color.BLUE;
+        }
+        if (temperature < 32) {
+            return Color.GREEN;
+        }
+        if (temperature < 34) {
+            return Color.ORANGE;
+        }
+        return Color.RED;
     }
 
     /* ==========================================================
@@ -435,56 +433,73 @@ public class MainApp extends Application {
         boolean inRange = temperature >= 22 && temperature <= 28;
         boolean visible = backgroundImageView.isVisible();
 
-        if (inRange && !visible) {
-            showWithBounce(backgroundImageView, "y", 500, -20, 0);
-            showWithBounce(palmier1, "x", -500, -180, -200);
-            showWithBounce(palmier2, "x", 500, 130, 150);
-            showWithBounce(maimuta, "y", -500, -180, -300);
-        }
-
-        if (!inRange && visible) {
-            hideWithBounce(backgroundImageView, "y", 0, -20, 500);
-            hideWithBounce(palmier1, "x", -200, -180, -500);
-            hideWithBounce(palmier2, "x", 150, 130, 500);
-            hideWithBounce(maimuta, "y", -200, -180, -500);
-        }
+        updateScene(inRange, visible,
+                () -> {
+                    showWithBounce(backgroundImageView, "y", 500, -20, 0);
+                    showWithBounce(palmier1, "x", -500, -180, -200);
+                    showWithBounce(palmier2, "x", 500, 130, 150);
+                    showWithBounce(maimuta, "y", -500, -180, -300);
+                },
+                () -> {
+                    hideWithBounce(backgroundImageView, "y", 0, -20, 500);
+                    hideWithBounce(palmier1, "x", -200, -180, -500);
+                    hideWithBounce(palmier2, "x", 150, 130, 500);
+                    hideWithBounce(maimuta, "y", -200, -180, -500);
+                }
+        );
     }
 
     private void updateBeachScene(float temperature) {
         boolean inRange = temperature > 29 && temperature <= 31;
         boolean visible = backgroundImageView1.isVisible();
 
-        if (inRange && !visible) {
-            showWithBounce(backgroundImageView1, "y", 500, -20, 0);
-            showWithBounce(sezlong, "x", 500, 80, 100);
-            showWithBounce(soare, "y", -500, -180, -350);
-            showWithBounce(palmierPlaja, "x", -500, -130, -300);
-        }
-
-        if (!inRange && visible) {
-            hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
-            hideWithBounce(sezlong, "x", 100, 80, 500);
-            hideWithBounce(soare, "y", -200, -180, -500);
-            hideWithBounce(palmierPlaja, "x", -150, -130, -500);
-        }
+        updateScene(inRange, visible,
+                () -> {
+                    showWithBounce(backgroundImageView1, "y", 500, -20, 0);
+                    showWithBounce(sezlong, "x", 500, 80, 100);
+                    showWithBounce(soare, "y", -500, -180, -350);
+                    showWithBounce(palmierPlaja, "x", -500, -130, -300);
+                },
+                () -> {
+                    hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
+                    hideWithBounce(sezlong, "x", 100, 80, 500);
+                    hideWithBounce(soare, "y", -200, -180, -500);
+                    hideWithBounce(palmierPlaja, "x", -150, -130, -500);
+                }
+        );
     }
 
     private void updateDesertScene(float temperature) {
         boolean inRange = temperature >= 32 && temperature <= 34;
         boolean visible = backgroundImageView2.isVisible();
 
-        if (inRange && !visible) {
-            showWithBounce(backgroundImageView2, "y", 500, -20, 0);
-            showWithBounce(cactus1, "x", 500, 80, 100);
-            showWithBounce(cactus2, "x", -500, -100, -120);
-            showWithBounce(camila, "y", 500, 80, 100);
-        }
+        updateScene(inRange, visible,
+                () -> {
+                    showWithBounce(backgroundImageView2, "y", 500, -20, 0);
+                    showWithBounce(cactus1, "x", 500, 80, 100);
+                    showWithBounce(cactus2, "x", -500, -100, -120);
+                    showWithBounce(camila, "y", 500, 80, 100);
+                },
+                () -> {
+                    hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
+                    hideWithBounce(cactus1, "x", 100, 80, 500);
+                    hideWithBounce(cactus2, "x", -120, -100, -500);
+                    hideWithBounce(camila, "y", 100, 80, 500);
+                }
+        );
+    }
 
+    private void updateScene(
+            boolean inRange,
+            boolean visible,
+            Runnable showAction,
+            Runnable hideAction
+    ) {
+        if (inRange && !visible) {
+            showAction.run();
+        }
         if (!inRange && visible) {
-            hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
-            hideWithBounce(cactus1, "x", 100, 80, 500);
-            hideWithBounce(cactus2, "x", -120, -100, -500);
-            hideWithBounce(camila, "y", 100, 80, 500);
+            hideAction.run();
         }
     }
 
