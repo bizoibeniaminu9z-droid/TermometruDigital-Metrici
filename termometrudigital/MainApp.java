@@ -1,4 +1,3 @@
-
 package termometrudigital;
 
 import javafx.animation.FillTransition;
@@ -367,110 +366,139 @@ public class MainApp extends Application {
     }
 
     private void updateThermometer(float temperature) {
-        // Actualizăm label-ul
-        tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
-
-        // --- Istoric + statistici ---
-        tempHistory.add((double) temperature);
-        sumTemp += temperature;
-        if (temperature < minTemp) minTemp = temperature;
-        if (temperature > maxTemp) maxTemp = temperature;
-        sampleIndex++;
-        tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
-
-        // --- Animație termometru ---
-        double maxTempValue = 100.0;
-        double maxHeight = 300.0;
-        double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
-
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.millis(300),
-                        new KeyValue(thermometerBar.heightProperty(), targetHeight)
-                )
-        );
-        timeline.play();
-
-        Color targetColor;
-        if (temperature < 30) {
-            targetColor = Color.BLUE;
-        } else if (temperature < 32) {
-            targetColor = Color.GREEN;
-        } else if (temperature < 34) {
-            targetColor = Color.ORANGE;
-        } else {
-            targetColor = Color.RED;
-        }
-
-        FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
-        fillTransition.setToValue(targetColor);
-        fillTransition.play();
-
-        alertImageView.setVisible(temperature >= 34);
-
-        // ----- LOGICA ANIMAȚIILOR CU FUNDALURI -----
-
-        if ((temperature >= 22 && temperature <= 28) && !backgroundImageView.isVisible()) {
-            showWithBounce(backgroundImageView, "y", 500, -20, 0);
-            showWithBounce(palmier1, "x", -500, -180, -200);
-            showWithBounce(palmier2, "x", 500, 130, 150);
-            showWithBounce(maimuta, "y", -500, -180, -300);
-        }
-
-        if ((temperature <= 18 || temperature >= 29) && backgroundImageView.isVisible()) {
-            hideWithBounce(backgroundImageView, "y", 0, -20, 500);
-            hideWithBounce(palmier1, "x", -200, -180, -500);
-            hideWithBounce(palmier2, "x", 150, 130, 500);
-            hideWithBounce(maimuta, "y", -200, -180, -500);
-        }
-
-        if ((temperature > 29 && temperature <= 31) && !backgroundImageView1.isVisible()) {
-            showWithBounce(backgroundImageView1, "y", 500, -20, 0);
-            showWithBounce(sezlong, "x", 500, 80, 100);
-            showWithBounce(soare, "y", -500, -180, -350);
-            showWithBounce(palmierPlaja, "x", -500, -130, -300);
-        }
-
-        if ((temperature <= 28 || temperature >= 32) && backgroundImageView1.isVisible()) {
-            hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
-            hideWithBounce(sezlong, "x", 100, 80, 500);
-            hideWithBounce(soare, "y", -200, -180, -500);
-            hideWithBounce(palmierPlaja, "x", -150, -130, -500);
-        }
-
-        if ((temperature >= 32 && temperature <= 34) && !backgroundImageView2.isVisible()) {
-            showWithBounce(backgroundImageView2, "y", 500, -20, 0);
-            showWithBounce(cactus1, "x", 500, 80, 100);
-            showWithBounce(cactus2, "x", -500, -100, -120);
-            showWithBounce(camila, "y", 500, 80, 100);
-        }
-
-        if ((temperature <= 31 || temperature >= 40) && backgroundImageView2.isVisible()) {
-            hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
-            hideWithBounce(cactus1, "x", 100, 80, 500);
-            hideWithBounce(cactus2, "x", -120, -100, -500);
-            hideWithBounce(camila, "y", 100, 80, 500);
-        }
-
-        // ----- LOGICA PENTRU MOD AUTOMAT -----
-        if (!isManualMode && serialComm != null) {
-            double threshold = fanThresholdSlider.getValue();
-            boolean shouldBeOn = temperature >= threshold;
-
-            if (shouldBeOn != isFanOn) {
-                try {
-                    serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
-                    isFanOn = shouldBeOn;
-
-                    // actualizăm și butonul ca să vezi starea reală
-                    fanToggle.setSelected(shouldBeOn);
-                    fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
-                } catch (IOException e) {
-                    tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
-                    e.printStackTrace();
-                }
-            }
-        }
+        updateTemperatureLabel(temperature);
+        updateStatisticsAndChart(temperature);
+        animateThermometerBar(temperature);
+        updateAlertImage(temperature);
+        updateScenes(temperature);
+        updateAutoFan(temperature);
     }
+
+    private void updateTemperatureLabel(float temperature) {
+    tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
+}
+
+private void updateStatisticsAndChart(float temperature) {
+    tempHistory.add((double) temperature);
+    sumTemp += temperature;
+    if (temperature < minTemp) {
+        minTemp = temperature;
+    }
+    if (temperature > maxTemp) {
+        maxTemp = temperature;
+    }
+    sampleIndex++;
+    tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
+}
+
+private void animateThermometerBar(float temperature) {
+    double maxTempValue = 100.0;
+    double maxHeight = 300.0;
+    double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
+
+    Timeline timeline = new Timeline(
+            new KeyFrame(Duration.millis(300),
+                    new KeyValue(thermometerBar.heightProperty(), targetHeight)
+            )
+    );
+    timeline.play();
+
+    Color targetColor;
+    if (temperature < 30) {
+        targetColor = Color.BLUE;
+    } else if (temperature < 32) {
+        targetColor = Color.GREEN;
+    } else if (temperature < 34) {
+        targetColor = Color.ORANGE;
+    } else {
+        targetColor = Color.RED;
+    }
+
+    FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
+    fillTransition.setToValue(targetColor);
+    fillTransition.play();
+}
+
+private void updateAlertImage(float temperature) {
+    alertImageView.setVisible(temperature >= 34);
+}
+
+private void updateScenes(float temperature) {
+    updateTropicalScene(temperature);
+    updateBeachScene(temperature);
+    updateDesertScene(temperature);
+}
+
+private void updateTropicalScene(float temperature) {
+    if (temperature >= 22 && temperature <= 28 && !backgroundImageView.isVisible()) {
+        showWithBounce(backgroundImageView, "y", 500, -20, 0);
+        showWithBounce(palmier1, "x", -500, -180, -200);
+        showWithBounce(palmier2, "x", 500, 130, 150);
+        showWithBounce(maimuta, "y", -500, -180, -300);
+    }
+    if (temperature <= 18 || temperature >= 29 && backgroundImageView.isVisible()) {
+        hideWithBounce(backgroundImageView, "y", 0, -20, 500);
+        hideWithBounce(palmier1, "x", -200, -180, -500);
+        hideWithBounce(palmier2, "x", 150, 130, 500);
+        hideWithBounce(maimuta, "y", -200, -180, -500);
+    }
+}
+
+private void updateBeachScene(float temperature) {
+    if (temperature > 29 && temperature <= 31 && !backgroundImageView1.isVisible()) {
+        showWithBounce(backgroundImageView1, "y", 500, -20, 0);
+        showWithBounce(sezlong, "x", 500, 80, 100);
+        showWithBounce(soare, "y", -500, -180, -350);
+        showWithBounce(palmierPlaja, "x", -500, -130, -300);
+    }   
+    if (temperature <= 28 || temperature >= 32 && backgroundImageView1.isVisible()) {
+        hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
+        hideWithBounce(sezlong, "x", 100, 80, 500);
+        hideWithBounce(soare, "y", -200, -180, -500);
+        hideWithBounce(palmierPlaja, "x", -150, -130, -500);
+    }
+}
+
+private void updateDesertScene(float temperature) {
+    if (temperature >= 32 && temperature <= 34 && !backgroundImageView2.isVisible()) {
+        showWithBounce(backgroundImageView2, "y", 500, -20, 0);
+        showWithBounce(cactus1, "x", 500, 80, 100);
+        showWithBounce(cactus2, "x", -500, -100, -120);
+        showWithBounce(camila, "y", 500, 80, 100);
+    }
+    if (temperature <= 31 || temperature >= 40 && backgroundImageView2.isVisible()) {
+        hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
+        hideWithBounce(cactus1, "x", 100, 80, 500);
+        hideWithBounce(cactus2, "x", -120, -100, -500);
+        hideWithBounce(camila, "y", 100, 80, 500);
+    }
+}
+
+private void updateAutoFan(float temperature) {
+    if (isManualMode || serialComm == null) {
+        return;
+    }
+
+    double threshold = fanThresholdSlider.getValue();
+    boolean shouldBeOn = temperature >= threshold;
+
+    if (shouldBeOn == isFanOn) {
+        return;
+    }
+
+    try {
+        serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
+        isFanOn = shouldBeOn;
+
+        fanToggle.setSelected(shouldBeOn);
+        fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
+    } catch (IOException e) {
+        tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
+        e.printStackTrace();
+    }
+}
+
+    
 
     private void generatePdfReport(Stage owner) {
         if (tempHistory.isEmpty()) {
@@ -584,4 +612,3 @@ public class MainApp extends Application {
         launch(args);
     }
 }
-
