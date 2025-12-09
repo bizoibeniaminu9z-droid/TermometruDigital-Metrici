@@ -87,7 +87,6 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        StackPane thermometerStack = new StackPane();
         tempLabel = new Label("Temperatura: -- °C");
         tempLabel.setFont(new Font("Arial", 32));
 
@@ -102,7 +101,7 @@ public class MainApp extends Application {
         thermometerOutline.setArcWidth(20);
         thermometerOutline.setArcHeight(20);
 
-        thermometerStack = new StackPane();
+        StackPane thermometerStack = new StackPane();
         thermometerStack.setPrefSize(70, 320);
         thermometerStack.setMinHeight(320);
         thermometerStack.setMaxHeight(320);
