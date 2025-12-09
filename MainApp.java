@@ -143,9 +143,11 @@ public class MainApp extends Application {
         fanThresholdSlider.setDisable(true); // la început suntem în manual
 
         Label thresholdLabel = new Label("Prag ventilator: 30 °C");
-        fanThresholdSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            thresholdLabel.setText(String.format("Prag ventilator: %.0f °C", newVal.doubleValue()));
-        });
+        fanThresholdSlider.valueProperty().addListener((obs, oldVal, newVal) ->
+        thresholdLabel.setText(
+                String.format("Prag ventilator: %.0f °C", newVal.doubleValue())
+            )
+        );
 
         // Rând pentru butoane (mod + ventilator)
         HBox buttonsRow = new HBox(10, modeToggle, fanToggle);
