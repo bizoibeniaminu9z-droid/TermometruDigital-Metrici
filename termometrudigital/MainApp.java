@@ -1,6 +1,5 @@
 package termometrudigital;
 
-
 import javafx.animation.FillTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -81,7 +80,7 @@ public class MainApp extends Application {
     private LineChart<Number, Number> tempChart;
     private XYChart.Series<Number, Number> tempSeries;
     private int sampleIndex = 0;
-    private List<Double> tempHistory = new ArrayList<>();
+    private final List<Double> tempHistory = new ArrayList<>();
     private double minTemp = Double.POSITIVE_INFINITY;
     private double maxTemp = Double.NEGATIVE_INFINITY;
     private double sumTemp = 0.0;
@@ -91,6 +90,7 @@ public class MainApp extends Application {
         tempLabel = new Label("Temperatura: -- °C");
         tempLabel.setFont(new Font("Arial", 32));
 
+        // termometru
         thermometerBar = new Rectangle(50, 0, Color.BLUE);
         thermometerBar.setArcWidth(20);
         thermometerBar.setArcHeight(20);
@@ -122,7 +122,6 @@ public class MainApp extends Application {
 
         HBox thermoRow = new HBox(5, thermometerStack);
         thermoRow.setAlignment(Pos.CENTER);
-        thermoRow.setPadding(new Insets(0, 0, 0, 0));
 
         // Buton ventilator (manual ON/OFF)
         fanToggle = new ToggleButton(FAN_OFF_TEXT);
@@ -144,9 +143,9 @@ public class MainApp extends Application {
 
         Label thresholdLabel = new Label("Prag ventilator: 30 °C");
         fanThresholdSlider.valueProperty().addListener((obs, oldVal, newVal) ->
-        thresholdLabel.setText(
-                String.format("Prag ventilator: %.0f °C", newVal.doubleValue())
-            )
+                thresholdLabel.setText(
+                        String.format("Prag ventilator: %.0f °C", newVal.doubleValue())
+                )
         );
 
         // Rând pentru butoane (mod + ventilator)
@@ -199,97 +198,65 @@ public class MainApp extends Application {
         alertImageView.setPreserveRatio(false);
         alertImageView.setVisible(false);
 
-        backgroundImageView = new ImageView();
-        backgroundImageView.setImage(new Image("file:C:/Users/benib/Desktop/tropical-ground.png"));
-        backgroundImageView.setFitWidth(600);
-        backgroundImageView.setPreserveRatio(true);
-        backgroundImageView.setTranslateY(500);
-        backgroundImageView.setVisible(false);
+        backgroundImageView = createImage(
+                "file:C:/Users/benib/Desktop/tropical-ground.png",
+                600, true, 500, 0
+        );
 
-        palmier1 = new ImageView();
-        palmier1.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
-        palmier1.setFitWidth(500);
-        palmier1.setPreserveRatio(true);
-        palmier1.setTranslateX(500);
-        palmier1.setTranslateY(-50);
-        palmier1.setVisible(false);
+        palmier1 = createImage(
+                "file:C:/Users/benib/Desktop/palmier1.png",
+                500, true, -50, 500
+        );
 
-        palmier2 = new ImageView();
-        palmier2.setImage(new Image("file:C:/Users/benib/Desktop/palmier2.png"));
-        palmier2.setFitWidth(600);
-        palmier2.setPreserveRatio(true);
-        palmier2.setTranslateX(500);
-        palmier2.setTranslateY(50);
-        palmier2.setVisible(false);
+        palmier2 = createImage(
+                "file:C:/Users/benib/Desktop/palmier2.png",
+                600, true, 50, 500
+        );
 
-        maimuta = new ImageView();
-        maimuta.setImage(new Image("file:C:/Users/benib/Desktop/maimuta.png"));
-        maimuta.setFitWidth(300);
-        maimuta.setPreserveRatio(true);
-        maimuta.setTranslateX(170);
-        maimuta.setTranslateY(500);
-        maimuta.setVisible(false);
+        maimuta = createImage(
+                "file:C:/Users/benib/Desktop/maimuta.png",
+                300, true, 500, 170
+        );
 
-        backgroundImageView1 = new ImageView();
-        backgroundImageView1.setImage(new Image("file:C:/Users/benib/Desktop/beach-ground.png"));
-        backgroundImageView1.setFitWidth(600);
-        backgroundImageView1.setPreserveRatio(true);
-        backgroundImageView1.setTranslateY(500);
-        backgroundImageView1.setVisible(false);
+        backgroundImageView1 = createImage(
+                "file:C:/Users/benib/Desktop/beach-ground.png",
+                600, true, 500, 0
+        );
 
-        sezlong = new ImageView();
-        sezlong.setImage(new Image("file:C:/Users/benib/Desktop/sezlong.png"));
-        sezlong.setFitWidth(150);
-        sezlong.setPreserveRatio(true);
-        sezlong.setTranslateX(500);
-        sezlong.setTranslateY(130);
-        sezlong.setVisible(false);
+        sezlong = createImage(
+                "file:C:/Users/benib/Desktop/sezlong.png",
+                150, true, 130, 500
+        );
 
-        soare = new ImageView();
-        soare.setImage(new Image("file:C:/Users/benib/Desktop/soare.png"));
-        soare.setFitWidth(150);
-        soare.setPreserveRatio(true);
-        soare.setTranslateY(500);
-        soare.setTranslateX(200);
-        soare.setVisible(false);
+        soare = createImage(
+                "file:C:/Users/benib/Desktop/soare.png",
+                150, true, 500, 200
+        );
 
-        palmierPlaja = new ImageView();
-        palmierPlaja.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
-        palmierPlaja.setFitWidth(700);
-        palmierPlaja.setPreserveRatio(true);
-        palmierPlaja.setTranslateX(500);
-        palmierPlaja.setTranslateY(-50);
-        palmierPlaja.setVisible(false);
+        palmierPlaja = createImage(
+                "file:C:/Users/benib/Desktop/palmier1.png",
+                700, true, -50, 500
+        );
 
-        backgroundImageView2 = new ImageView();
-        backgroundImageView2.setImage(new Image("file:C:/Users/benib/Desktop/desert-ground.png"));
-        backgroundImageView2.setFitWidth(800);
-        backgroundImageView2.setPreserveRatio(true);
-        backgroundImageView2.setTranslateY(500);
-        backgroundImageView2.setVisible(false);
+        backgroundImageView2 = createImage(
+                "file:C:/Users/benib/Desktop/desert-ground.png",
+                800, true, 500, 0
+        );
 
-        cactus1 = new ImageView();
-        cactus1.setImage(new Image("file:C:/Users/benib/Desktop/cactus1.png"));
-        cactus1.setFitWidth(250);
-        cactus1.setPreserveRatio(true);
-        cactus1.setTranslateX(500);
-        cactus1.setTranslateY(100);
-        cactus1.setVisible(false);
+        cactus1 = createImage(
+                "file:C:/Users/benib/Desktop/cactus1.png",
+                250, true, 100, 500
+        );
 
-        cactus2 = new ImageView();
-        cactus2.setImage(new Image("file:C:/Users/benib/Desktop/cactus1.png"));
-        cactus2.setFitWidth(250);
-        cactus2.setPreserveRatio(true);
-        cactus2.setTranslateX(500);
-        cactus2.setTranslateY(90);
-        cactus2.setVisible(false);
+        cactus2 = createImage(
+                "file:C:/Users/benib/Desktop/cactus1.png",
+                250, true, 90, 500
+        );
 
-        camila = new ImageView();
-        camila.setImage(new Image("file:C:/Users/benib/Desktop/camila.png"));
-        camila.setFitWidth(450);
-        camila.setPreserveRatio(true);
-        camila.setTranslateY(500);
-        camila.setVisible(false);
+        camila = createImage(
+                "file:C:/Users/benib/Desktop/camila.png",
+                450, true, 500, 0
+        );
 
         StackPane root = new StackPane(
                 backgroundImageView,
@@ -316,6 +283,10 @@ public class MainApp extends Application {
         new Thread(this::setupSerialCommunication).start();
     }
 
+    /* ==========================================================
+       Comunicație serială
+       ========================================================== */
+
     private void setupSerialCommunication() {
         serialComm = new SerialCommunication("COM3", 9600);
         if (!serialComm.openPort()) {
@@ -332,6 +303,10 @@ public class MainApp extends Application {
             }
         }));
     }
+
+    /* ==========================================================
+       Control ventilator
+       ========================================================== */
 
     // Comutare mod manual / automat
     private void handleModeToggle() {
@@ -350,7 +325,6 @@ public class MainApp extends Application {
 
     // Control manual ventilator
     private void handleFanToggle() {
-        // Dacă suntem în mod automat, ignorăm (oricum butonul e disabled)
         if (!isManualMode || serialComm == null) {
             return;
         }
@@ -366,140 +340,157 @@ public class MainApp extends Application {
         }
     }
 
+    private void updateAutoFan(float temperature) {
+        if (isManualMode || serialComm == null) {
+            return;
+        }
+
+        double threshold = fanThresholdSlider.getValue();
+        boolean shouldBeOn = temperature >= threshold;
+
+        if (shouldBeOn == isFanOn) {
+            return;
+        }
+
+        try {
+            serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
+            isFanOn = shouldBeOn;
+
+            fanToggle.setSelected(shouldBeOn);
+            fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
+        } catch (IOException e) {
+            tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
+            e.printStackTrace();
+        }
+    }
+
+    /* ==========================================================
+       Actualizare termometru
+       ========================================================== */
+
     private void updateThermometer(float temperature) {
-        updateTemperatureLabel(temperature);
-        updateStatisticsAndChart(temperature);
+        // label
+        tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
+
+        // istoric + statistici + grafic
+        tempHistory.add((double) temperature);
+        sumTemp += temperature;
+        minTemp = Math.min(minTemp, temperature);
+        maxTemp = Math.max(maxTemp, temperature);
+        sampleIndex++;
+        tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
+
+        // animație bară + culoare
         animateThermometerBar(temperature);
-        updateAlertImage(temperature);
+
+        // imagine alertă
+        alertImageView.setVisible(temperature >= 34);
+
+        // scene de fundal
         updateScenes(temperature);
+
+        // ventilator în modul automat
         updateAutoFan(temperature);
     }
 
-    private void updateTemperatureLabel(float temperature) {
-    tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
-}
+    private void animateThermometerBar(float temperature) {
+        double maxTempValue = 100.0;
+        double maxHeight = 300.0;
+        double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
 
-private void updateStatisticsAndChart(float temperature) {
-    tempHistory.add((double) temperature);
-    sumTemp += temperature;
-    if (temperature < minTemp) {
-        minTemp = temperature;
-    }
-    if (temperature > maxTemp) {
-        maxTemp = temperature;
-    }
-    sampleIndex++;
-    tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
-}
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(300),
+                        new KeyValue(thermometerBar.heightProperty(), targetHeight)
+                )
+        );
+        timeline.play();
 
-private void animateThermometerBar(float temperature) {
-    double maxTempValue = 100.0;
-    double maxHeight = 300.0;
-    double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
+        Color targetColor;
+        if (temperature < 30) {
+            targetColor = Color.BLUE;
+        } else if (temperature < 32) {
+            targetColor = Color.GREEN;
+        } else if (temperature < 34) {
+            targetColor = Color.ORANGE;
+        } else {
+            targetColor = Color.RED;
+        }
 
-    Timeline timeline = new Timeline(
-            new KeyFrame(Duration.millis(300),
-                    new KeyValue(thermometerBar.heightProperty(), targetHeight)
-            )
-    );
-    timeline.play();
-
-    Color targetColor;
-    if (temperature < 30) {
-        targetColor = Color.BLUE;
-    } else if (temperature < 32) {
-        targetColor = Color.GREEN;
-    } else if (temperature < 34) {
-        targetColor = Color.ORANGE;
-    } else {
-        targetColor = Color.RED;
+        FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
+        fillTransition.setToValue(targetColor);
+        fillTransition.play();
     }
 
-    FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
-    fillTransition.setToValue(targetColor);
-    fillTransition.play();
-}
+    /* ==========================================================
+       Scene de fundal
+       ========================================================== */
 
-private void updateAlertImage(float temperature) {
-    alertImageView.setVisible(temperature >= 34);
-}
-
-private void updateScenes(float temperature) {
-    updateTropicalScene(temperature);
-    updateBeachScene(temperature);
-    updateDesertScene(temperature);
-}
-
-private void updateTropicalScene(float temperature) {
-    if (temperature >= 22 && temperature <= 28 && !backgroundImageView.isVisible()) {
-        showWithBounce(backgroundImageView, "y", 500, -20, 0);
-        showWithBounce(palmier1, "x", -500, -180, -200);
-        showWithBounce(palmier2, "x", 500, 130, 150);
-        showWithBounce(maimuta, "y", -500, -180, -300);
-    }
-    if (temperature <= 18 || temperature >= 29 && backgroundImageView.isVisible()) {
-        hideWithBounce(backgroundImageView, "y", 0, -20, 500);
-        hideWithBounce(palmier1, "x", -200, -180, -500);
-        hideWithBounce(palmier2, "x", 150, 130, 500);
-        hideWithBounce(maimuta, "y", -200, -180, -500);
-    }
-}
-
-private void updateBeachScene(float temperature) {
-    if (temperature > 29 && temperature <= 31 && !backgroundImageView1.isVisible()) {
-        showWithBounce(backgroundImageView1, "y", 500, -20, 0);
-        showWithBounce(sezlong, "x", 500, 80, 100);
-        showWithBounce(soare, "y", -500, -180, -350);
-        showWithBounce(palmierPlaja, "x", -500, -130, -300);
-    }   
-    if (temperature <= 28 || temperature >= 32 && backgroundImageView1.isVisible()) {
-        hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
-        hideWithBounce(sezlong, "x", 100, 80, 500);
-        hideWithBounce(soare, "y", -200, -180, -500);
-        hideWithBounce(palmierPlaja, "x", -150, -130, -500);
-    }
-}
-
-private void updateDesertScene(float temperature) {
-    if (temperature >= 32 && temperature <= 34 && !backgroundImageView2.isVisible()) {
-        showWithBounce(backgroundImageView2, "y", 500, -20, 0);
-        showWithBounce(cactus1, "x", 500, 80, 100);
-        showWithBounce(cactus2, "x", -500, -100, -120);
-        showWithBounce(camila, "y", 500, 80, 100);
-    }
-    if (temperature <= 31 || temperature >= 40 && backgroundImageView2.isVisible()) {
-        hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
-        hideWithBounce(cactus1, "x", 100, 80, 500);
-        hideWithBounce(cactus2, "x", -120, -100, -500);
-        hideWithBounce(camila, "y", 100, 80, 500);
-    }
-}
-
-private void updateAutoFan(float temperature) {
-    if (isManualMode || serialComm == null) {
-        return;
+    private void updateScenes(float temperature) {
+        updateTropicalScene(temperature);
+        updateBeachScene(temperature);
+        updateDesertScene(temperature);
     }
 
-    double threshold = fanThresholdSlider.getValue();
-    boolean shouldBeOn = temperature >= threshold;
+    private void updateTropicalScene(float temperature) {
+        boolean inRange = temperature >= 22 && temperature <= 28;
+        boolean visible = backgroundImageView.isVisible();
 
-    if (shouldBeOn == isFanOn) {
-        return;
+        if (inRange && !visible) {
+            showWithBounce(backgroundImageView, "y", 500, -20, 0);
+            showWithBounce(palmier1, "x", -500, -180, -200);
+            showWithBounce(palmier2, "x", 500, 130, 150);
+            showWithBounce(maimuta, "y", -500, -180, -300);
+        }
+
+        if (!inRange && visible) {
+            hideWithBounce(backgroundImageView, "y", 0, -20, 500);
+            hideWithBounce(palmier1, "x", -200, -180, -500);
+            hideWithBounce(palmier2, "x", 150, 130, 500);
+            hideWithBounce(maimuta, "y", -200, -180, -500);
+        }
     }
 
-    try {
-        serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
-        isFanOn = shouldBeOn;
+    private void updateBeachScene(float temperature) {
+        boolean inRange = temperature > 29 && temperature <= 31;
+        boolean visible = backgroundImageView1.isVisible();
 
-        fanToggle.setSelected(shouldBeOn);
-        fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
-    } catch (IOException e) {
-        tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
-        e.printStackTrace();
+        if (inRange && !visible) {
+            showWithBounce(backgroundImageView1, "y", 500, -20, 0);
+            showWithBounce(sezlong, "x", 500, 80, 100);
+            showWithBounce(soare, "y", -500, -180, -350);
+            showWithBounce(palmierPlaja, "x", -500, -130, -300);
+        }
+
+        if (!inRange && visible) {
+            hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
+            hideWithBounce(sezlong, "x", 100, 80, 500);
+            hideWithBounce(soare, "y", -200, -180, -500);
+            hideWithBounce(palmierPlaja, "x", -150, -130, -500);
+        }
     }
-}
 
-    
+    private void updateDesertScene(float temperature) {
+        boolean inRange = temperature >= 32 && temperature <= 34;
+        boolean visible = backgroundImageView2.isVisible();
+
+        if (inRange && !visible) {
+            showWithBounce(backgroundImageView2, "y", 500, -20, 0);
+            showWithBounce(cactus1, "x", 500, 80, 100);
+            showWithBounce(cactus2, "x", -500, -100, -120);
+            showWithBounce(camila, "y", 500, 80, 100);
+        }
+
+        if (!inRange && visible) {
+            hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
+            hideWithBounce(cactus1, "x", 100, 80, 500);
+            hideWithBounce(cactus2, "x", -120, -100, -500);
+            hideWithBounce(camila, "y", 100, 80, 500);
+        }
+    }
+
+    /* ==========================================================
+       Raport PDF
+       ========================================================== */
 
     private void generatePdfReport(Stage owner) {
         if (tempHistory.isEmpty()) {
@@ -568,6 +559,27 @@ private void updateAutoFan(float temperature) {
         }
     }
 
+    /* ==========================================================
+       Utilitare pentru animații și imagini
+       ========================================================== */
+
+    private ImageView createImage(
+            String path,
+            double fitWidth,
+            boolean preserveRatio,
+            double translateY,
+            double translateX
+    ) {
+        ImageView imageView = new ImageView();
+        imageView.setImage(new Image(path));
+        imageView.setFitWidth(fitWidth);
+        imageView.setPreserveRatio(preserveRatio);
+        imageView.setTranslateY(translateY);
+        imageView.setTranslateX(translateX);
+        imageView.setVisible(false);
+        return imageView;
+    }
+
     private void showWithBounce(Node node, String axis, double startPos, double bouncePos, double finalPos) {
         node.setVisible(true);
 
@@ -604,9 +616,8 @@ private void updateAutoFan(float temperature) {
     private javafx.beans.property.DoubleProperty getTranslateProperty(Node node, String axis) {
         if (axis.equalsIgnoreCase("x")) {
             return node.translateXProperty();
-        } else {
-            return node.translateYProperty();
         }
+        return node.translateYProperty();
     }
 
     public static void main(String[] args) {
