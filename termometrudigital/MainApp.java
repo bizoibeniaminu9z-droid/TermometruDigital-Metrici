@@ -80,57 +80,16 @@ public class MainApp extends Application {
     private LineChart<Number, Number> tempChart;
     private XYChart.Series<Number, Number> tempSeries;
     private int sampleIndex = 0;
-    private final List<Double> tempHistory = new ArrayList<>();
+    private List<Double> tempHistory = new ArrayList<>();
     private double minTemp = Double.POSITIVE_INFINITY;
     private double maxTemp = Double.NEGATIVE_INFINITY;
     private double sumTemp = 0.0;
 
     @Override
     public void start(Stage primaryStage) {
-        VBox tempBox = createTemperaturePanel(primaryStage);
-        initImages();
-        StackPane root = createRootLayout(tempBox);
+        tempLabel = new Label("Temperatura: -- °C");
+        tempLabel.setFont(new Font("Arial", 32));
 
-        Scene scene = new Scene(root, 600, 820);
-        primaryStage.setTitle("Termometru Digital");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        new Thread(this::setupSerialCommunication).start();
-    }
-
-    /* ===================  UI INIT  =================== */
-
-    private VBox createTemperaturePanel(Stage primaryStage) {
-        tempLabel = createTempLabel();
-        StackPane thermometerStack = createThermometerStack();
-        HBox thermoRow = createThermometerRow(thermometerStack);
-
-        LineChart<Number, Number> chart = createTemperatureChart();
-        VBox fanControlsBox = createFanControls(primaryStage);
-
-        VBox tempBox = new VBox();
-        tempBox.setPrefHeight(400);
-        tempBox.setAlignment(Pos.BOTTOM_CENTER);
-        VBox.setVgrow(thermoRow, Priority.ALWAYS);
-        tempBox.getChildren().addAll(
-                thermoRow,
-                tempLabel,
-                fanControlsBox,
-                chart
-        );
-        tempBox.setSpacing(10);
-        tempBox.setPadding(new Insets(0, 0, 50, 0));
-        return tempBox;
-    }
-
-    private Label createTempLabel() {
-        Label label = new Label("Temperatura: -- °C");
-        label.setFont(new Font("Arial", 32));
-        return label;
-    }
-
-    private StackPane createThermometerStack() {
         thermometerBar = new Rectangle(50, 0, Color.BLUE);
         thermometerBar.setArcWidth(20);
         thermometerBar.setArcHeight(20);
@@ -159,17 +118,45 @@ public class MainApp extends Application {
                 new CornerRadii(15),
                 new BorderWidths(2)
         )));
-        return thermometerStack;
-    }
 
-    private HBox createThermometerRow(StackPane thermometerStack) {
         HBox thermoRow = new HBox(5, thermometerStack);
         thermoRow.setAlignment(Pos.CENTER);
-        thermoRow.setPadding(new Insets(0));
-        return thermoRow;
-    }
+        thermoRow.setPadding(new Insets(0, 0, 0, 0));
 
-    private LineChart<Number, Number> createTemperatureChart() {
+        // Buton ventilator (manual ON/OFF)
+        fanToggle = new ToggleButton(FAN_OFF_TEXT);
+        fanToggle.setOnAction(e -> handleFanToggle());
+
+        // Buton Mod manual / Mod automat
+        modeToggle = new ToggleButton("Mod manual");
+        modeToggle.setSelected(true); // pornim în mod manual
+        modeToggle.setOnAction(e -> handleModeToggle());
+
+        // Slider prag pentru mod automat (20°C – 40°C)
+        fanThresholdSlider = new Slider(20, 40, 30);
+        fanThresholdSlider.setShowTickLabels(true);
+        fanThresholdSlider.setShowTickMarks(true);
+        fanThresholdSlider.setMajorTickUnit(5);
+        fanThresholdSlider.setMinorTickCount(4);
+        fanThresholdSlider.setBlockIncrement(1);
+        fanThresholdSlider.setDisable(true); // la început suntem în manual
+
+        Label thresholdLabel = new Label("Prag ventilator: 30 °C");
+        fanThresholdSlider.valueProperty().addListener((obs, oldVal, newVal) ->
+        thresholdLabel.setText(
+                String.format("Prag ventilator: %.0f °C", newVal.doubleValue())
+            )
+        );
+
+        // Rând pentru butoane (mod + ventilator)
+        HBox buttonsRow = new HBox(10, modeToggle, fanToggle);
+        buttonsRow.setAlignment(Pos.CENTER);
+
+        // Box pentru modul automat (label + slider)
+        VBox autoBox = new VBox(5, thresholdLabel, fanThresholdSlider);
+        autoBox.setAlignment(Pos.CENTER);
+
+        // Grafic temperatură (LineChart)
         NumberAxis xAxis = new NumberAxis();
         xAxis.setLabel("Esantion");
         NumberAxis yAxis = new NumberAxis();
@@ -183,59 +170,27 @@ public class MainApp extends Application {
         tempChart.setCreateSymbols(false);
         tempChart.setLegendVisible(false);
         tempChart.setPrefHeight(200);
-        return tempChart;
-    }
 
-    private VBox createFanControls(Stage primaryStage) {
-        fanToggle = new ToggleButton(FAN_OFF_TEXT);
-        fanToggle.setOnAction(e -> handleFanToggle());
-
-        modeToggle = new ToggleButton("Mod manual");
-        modeToggle.setSelected(true); // pornim în mod manual
-        modeToggle.setOnAction(e -> handleModeToggle());
-
-        fanThresholdSlider = createThresholdSlider();
-        Label thresholdLabel = createThresholdLabel();
-        bindThresholdLabel(thresholdLabel);
-
-        HBox buttonsRow = new HBox(10, modeToggle, fanToggle);
-        buttonsRow.setAlignment(Pos.CENTER);
-
-        VBox autoBox = new VBox(5, thresholdLabel, fanThresholdSlider);
-        autoBox.setAlignment(Pos.CENTER);
-
+        // Buton PDF
         Button pdfButton = new Button("Generează raport PDF");
         pdfButton.setOnAction(e -> generatePdfReport(primaryStage));
 
-        VBox controls = new VBox(10, buttonsRow, autoBox, pdfButton);
-        controls.setAlignment(Pos.CENTER);
-        return controls;
-    }
-
-    private Slider createThresholdSlider() {
-        Slider slider = new Slider(20, 40, 30);
-        slider.setShowTickLabels(true);
-        slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(5);
-        slider.setMinorTickCount(4);
-        slider.setBlockIncrement(1);
-        slider.setDisable(true); // la început suntem în manual
-        return slider;
-    }
-
-    private Label createThresholdLabel() {
-        return new Label("Prag ventilator: 30 °C");
-    }
-
-    private void bindThresholdLabel(Label thresholdLabel) {
-        fanThresholdSlider.valueProperty().addListener((obs, oldVal, newVal) ->
-                thresholdLabel.setText(
-                        String.format("Prag ventilator: %.0f °C", newVal.doubleValue())
-                )
+        VBox tempBox = new VBox();
+        tempBox.setPrefHeight(400);
+        tempBox.setAlignment(Pos.BOTTOM_CENTER);
+        VBox.setVgrow(thermoRow, Priority.ALWAYS);
+        tempBox.getChildren().addAll(
+                thermoRow,
+                tempLabel,
+                buttonsRow,
+                autoBox,
+                pdfButton,
+                tempChart
         );
-    }
+        tempBox.setSpacing(10);
+        tempBox.setPadding(new Insets(0, 0, 50, 0));
 
-    private void initImages() {
+        // Imagini (păstrezi path-urile tale)
         alertImageView = new ImageView();
         alertImageView.setImage(new Image("file:C:/Users/benib/Desktop/elmo-burn.jpg"));
         alertImageView.setFitWidth(400);
@@ -243,71 +198,99 @@ public class MainApp extends Application {
         alertImageView.setPreserveRatio(false);
         alertImageView.setVisible(false);
 
-        backgroundImageView = createImage(
-                "file:C:/Users/benib/Desktop/tropical-ground.png",
-                600, true, 500, 0, false);
+        backgroundImageView = new ImageView();
+        backgroundImageView.setImage(new Image("file:C:/Users/benib/Desktop/tropical-ground.png"));
+        backgroundImageView.setFitWidth(600);
+        backgroundImageView.setPreserveRatio(true);
+        backgroundImageView.setTranslateY(500);
+        backgroundImageView.setVisible(false);
 
-        palmier1 = createImage(
-                "file:C:/Users/benib/Desktop/palmier1.png",
-                500, true, -50, 500, false);
-        palmier2 = createImage(
-                "file:C:/Users/benib/Desktop/palmier2.png",
-                600, true, 50, 500, false);
+        palmier1 = new ImageView();
+        palmier1.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
+        palmier1.setFitWidth(500);
+        palmier1.setPreserveRatio(true);
+        palmier1.setTranslateX(500);
+        palmier1.setTranslateY(-50);
+        palmier1.setVisible(false);
 
-        maimuta = createImage(
-                "file:C:/Users/benib/Desktop/maimuta.png",
-                300, true, 500, 170, false);
+        palmier2 = new ImageView();
+        palmier2.setImage(new Image("file:C:/Users/benib/Desktop/palmier2.png"));
+        palmier2.setFitWidth(600);
+        palmier2.setPreserveRatio(true);
+        palmier2.setTranslateX(500);
+        palmier2.setTranslateY(50);
+        palmier2.setVisible(false);
 
-        backgroundImageView1 = createImage(
-                "file:C:/Users/benib/Desktop/beach-ground.png",
-                600, true, 500, 0, false);
+        maimuta = new ImageView();
+        maimuta.setImage(new Image("file:C:/Users/benib/Desktop/maimuta.png"));
+        maimuta.setFitWidth(300);
+        maimuta.setPreserveRatio(true);
+        maimuta.setTranslateX(170);
+        maimuta.setTranslateY(500);
+        maimuta.setVisible(false);
 
-        sezlong = createImage(
-                "file:C:/Users/benib/Desktop/sezlong.png",
-                150, true, 130, 500, false);
+        backgroundImageView1 = new ImageView();
+        backgroundImageView1.setImage(new Image("file:C:/Users/benib/Desktop/beach-ground.png"));
+        backgroundImageView1.setFitWidth(600);
+        backgroundImageView1.setPreserveRatio(true);
+        backgroundImageView1.setTranslateY(500);
+        backgroundImageView1.setVisible(false);
 
-        soare = createImage(
-                "file:C:/Users/benib/Desktop/soare.png",
-                150, true, 500, 200, false);
+        sezlong = new ImageView();
+        sezlong.setImage(new Image("file:C:/Users/benib/Desktop/sezlong.png"));
+        sezlong.setFitWidth(150);
+        sezlong.setPreserveRatio(true);
+        sezlong.setTranslateX(500);
+        sezlong.setTranslateY(130);
+        sezlong.setVisible(false);
 
-        palmierPlaja = createImage(
-                "file:C:/Users/benib/Desktop/palmier1.png",
-                700, true, -50, 500, false);
+        soare = new ImageView();
+        soare.setImage(new Image("file:C:/Users/benib/Desktop/soare.png"));
+        soare.setFitWidth(150);
+        soare.setPreserveRatio(true);
+        soare.setTranslateY(500);
+        soare.setTranslateX(200);
+        soare.setVisible(false);
 
-        backgroundImageView2 = createImage(
-                "file:C:/Users/benib/Desktop/desert-ground.png",
-                800, true, 500, 0, false);
+        palmierPlaja = new ImageView();
+        palmierPlaja.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
+        palmierPlaja.setFitWidth(700);
+        palmierPlaja.setPreserveRatio(true);
+        palmierPlaja.setTranslateX(500);
+        palmierPlaja.setTranslateY(-50);
+        palmierPlaja.setVisible(false);
 
-        cactus1 = createImage(
-                "file:C:/Users/benib/Desktop/cactus1.png",
-                250, true, 100, 500, false);
-        cactus2 = createImage(
-                "file:C:/Users/benib/Desktop/cactus1.png",
-                250, true, 90, 500, false);
+        backgroundImageView2 = new ImageView();
+        backgroundImageView2.setImage(new Image("file:C:/Users/benib/Desktop/desert-ground.png"));
+        backgroundImageView2.setFitWidth(800);
+        backgroundImageView2.setPreserveRatio(true);
+        backgroundImageView2.setTranslateY(500);
+        backgroundImageView2.setVisible(false);
 
-        camila = createImage(
-                "file:C:/Users/benib/Desktop/camila.png",
-                450, true, 500, 0, false);
-    }
+        cactus1 = new ImageView();
+        cactus1.setImage(new Image("file:C:/Users/benib/Desktop/cactus1.png"));
+        cactus1.setFitWidth(250);
+        cactus1.setPreserveRatio(true);
+        cactus1.setTranslateX(500);
+        cactus1.setTranslateY(100);
+        cactus1.setVisible(false);
 
-    private ImageView createImage(String path,
-                                  double fitWidth,
-                                  boolean preserveRatio,
-                                  double translateY,
-                                  double translateX,
-                                  boolean visible) {
-        ImageView imageView = new ImageView();
-        imageView.setImage(new Image(path));
-        imageView.setFitWidth(fitWidth);
-        imageView.setPreserveRatio(preserveRatio);
-        imageView.setTranslateY(translateY);
-        imageView.setTranslateX(translateX);
-        imageView.setVisible(visible);
-        return imageView;
-    }
+        cactus2 = new ImageView();
+        cactus2.setImage(new Image("file:C:/Users/benib/Desktop/cactus1.png"));
+        cactus2.setFitWidth(250);
+        cactus2.setPreserveRatio(true);
+        cactus2.setTranslateX(500);
+        cactus2.setTranslateY(90);
+        cactus2.setVisible(false);
 
-    private StackPane createRootLayout(VBox tempBox) {
-        return new StackPane(
+        camila = new ImageView();
+        camila.setImage(new Image("file:C:/Users/benib/Desktop/camila.png"));
+        camila.setFitWidth(450);
+        camila.setPreserveRatio(true);
+        camila.setTranslateY(500);
+        camila.setVisible(false);
+
+        StackPane root = new StackPane(
                 backgroundImageView,
                 backgroundImageView1,
                 backgroundImageView2,
@@ -323,9 +306,14 @@ public class MainApp extends Application {
                 tempBox,
                 alertImageView
         );
-    }
 
-    /* ===================  SERIAL & FAN  =================== */
+        Scene scene = new Scene(root, 600, 820);
+        primaryStage.setTitle("Termometru Digital");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        new Thread(this::setupSerialCommunication).start();
+    }
 
     private void setupSerialCommunication() {
         serialComm = new SerialCommunication("COM3", 9600);
@@ -361,6 +349,7 @@ public class MainApp extends Application {
 
     // Control manual ventilator
     private void handleFanToggle() {
+        // Dacă suntem în mod automat, ignorăm (oricum butonul e disabled)
         if (!isManualMode || serialComm == null) {
             return;
         }
@@ -386,130 +375,130 @@ public class MainApp extends Application {
     }
 
     private void updateTemperatureLabel(float temperature) {
-        tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
+    tempLabel.setText(String.format("Temperatura: %.2f °C", temperature));
+}
+
+private void updateStatisticsAndChart(float temperature) {
+    tempHistory.add((double) temperature);
+    sumTemp += temperature;
+    if (temperature < minTemp) {
+        minTemp = temperature;
+    }
+    if (temperature > maxTemp) {
+        maxTemp = temperature;
+    }
+    sampleIndex++;
+    tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
+}
+
+private void animateThermometerBar(float temperature) {
+    double maxTempValue = 100.0;
+    double maxHeight = 300.0;
+    double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
+
+    Timeline timeline = new Timeline(
+            new KeyFrame(Duration.millis(300),
+                    new KeyValue(thermometerBar.heightProperty(), targetHeight)
+            )
+    );
+    timeline.play();
+
+    Color targetColor;
+    if (temperature < 30) {
+        targetColor = Color.BLUE;
+    } else if (temperature < 32) {
+        targetColor = Color.GREEN;
+    } else if (temperature < 34) {
+        targetColor = Color.ORANGE;
+    } else {
+        targetColor = Color.RED;
     }
 
-    private void updateStatisticsAndChart(float temperature) {
-        tempHistory.add((double) temperature);
-        sumTemp += temperature;
-        if (temperature < minTemp) {
-            minTemp = temperature;
-        }
-        if (temperature > maxTemp) {
-            maxTemp = temperature;
-        }
-        sampleIndex++;
-        tempSeries.getData().add(new XYChart.Data<>(sampleIndex, temperature));
+    FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
+    fillTransition.setToValue(targetColor);
+    fillTransition.play();
+}
+
+private void updateAlertImage(float temperature) {
+    alertImageView.setVisible(temperature >= 34);
+}
+
+private void updateScenes(float temperature) {
+    updateTropicalScene(temperature);
+    updateBeachScene(temperature);
+    updateDesertScene(temperature);
+}
+
+private void updateTropicalScene(float temperature) {
+    if (temperature >= 22 && temperature <= 28 && !backgroundImageView.isVisible()) {
+        showWithBounce(backgroundImageView, "y", 500, -20, 0);
+        showWithBounce(palmier1, "x", -500, -180, -200);
+        showWithBounce(palmier2, "x", 500, 130, 150);
+        showWithBounce(maimuta, "y", -500, -180, -300);
+    }
+    if (temperature <= 18 || temperature >= 29 && backgroundImageView.isVisible()) {
+        hideWithBounce(backgroundImageView, "y", 0, -20, 500);
+        hideWithBounce(palmier1, "x", -200, -180, -500);
+        hideWithBounce(palmier2, "x", 150, 130, 500);
+        hideWithBounce(maimuta, "y", -200, -180, -500);
+    }
+}
+
+private void updateBeachScene(float temperature) {
+    if (temperature > 29 && temperature <= 31 && !backgroundImageView1.isVisible()) {
+        showWithBounce(backgroundImageView1, "y", 500, -20, 0);
+        showWithBounce(sezlong, "x", 500, 80, 100);
+        showWithBounce(soare, "y", -500, -180, -350);
+        showWithBounce(palmierPlaja, "x", -500, -130, -300);
+    }   
+    if (temperature <= 28 || temperature >= 32 && backgroundImageView1.isVisible()) {
+        hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
+        hideWithBounce(sezlong, "x", 100, 80, 500);
+        hideWithBounce(soare, "y", -200, -180, -500);
+        hideWithBounce(palmierPlaja, "x", -150, -130, -500);
+    }
+}
+
+private void updateDesertScene(float temperature) {
+    if (temperature >= 32 && temperature <= 34 && !backgroundImageView2.isVisible()) {
+        showWithBounce(backgroundImageView2, "y", 500, -20, 0);
+        showWithBounce(cactus1, "x", 500, 80, 100);
+        showWithBounce(cactus2, "x", -500, -100, -120);
+        showWithBounce(camila, "y", 500, 80, 100);
+    }
+    if (temperature <= 31 || temperature >= 40 && backgroundImageView2.isVisible()) {
+        hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
+        hideWithBounce(cactus1, "x", 100, 80, 500);
+        hideWithBounce(cactus2, "x", -120, -100, -500);
+        hideWithBounce(camila, "y", 100, 80, 500);
+    }
+}
+
+private void updateAutoFan(float temperature) {
+    if (isManualMode || serialComm == null) {
+        return;
     }
 
-    private void animateThermometerBar(float temperature) {
-        double maxTempValue = 100.0;
-        double maxHeight = 300.0;
-        double targetHeight = Math.min((temperature / maxTempValue) * maxHeight, maxHeight);
+    double threshold = fanThresholdSlider.getValue();
+    boolean shouldBeOn = temperature >= threshold;
 
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.millis(300),
-                        new KeyValue(thermometerBar.heightProperty(), targetHeight)
-                )
-        );
-        timeline.play();
-
-        Color targetColor;
-        if (temperature < 30) {
-            targetColor = Color.BLUE;
-        } else if (temperature < 32) {
-            targetColor = Color.GREEN;
-        } else if (temperature < 34) {
-            targetColor = Color.ORANGE;
-        } else {
-            targetColor = Color.RED;
-        }
-
-        FillTransition fillTransition = new FillTransition(Duration.millis(300), thermometerBar);
-        fillTransition.setToValue(targetColor);
-        fillTransition.play();
+    if (shouldBeOn == isFanOn) {
+        return;
     }
 
-    private void updateAlertImage(float temperature) {
-        alertImageView.setVisible(temperature >= 34);
+    try {
+        serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
+        isFanOn = shouldBeOn;
+
+        fanToggle.setSelected(shouldBeOn);
+        fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
+    } catch (IOException e) {
+        tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
+        e.printStackTrace();
     }
+}
 
-    private void updateScenes(float temperature) {
-        updateTropicalScene(temperature);
-        updateBeachScene(temperature);
-        updateDesertScene(temperature);
-    }
-
-    private void updateTropicalScene(float temperature) {
-        if (temperature >= 22 && temperature <= 28 && !backgroundImageView.isVisible()) {
-            showWithBounce(backgroundImageView, "y", 500, -20, 0);
-            showWithBounce(palmier1, "x", -500, -180, -200);
-            showWithBounce(palmier2, "x", 500, 130, 150);
-            showWithBounce(maimuta, "y", -500, -180, -300);
-        }
-        if ((temperature <= 18 || temperature >= 29) && backgroundImageView.isVisible()) {
-            hideWithBounce(backgroundImageView, "y", 0, -20, 500);
-            hideWithBounce(palmier1, "x", -200, -180, -500);
-            hideWithBounce(palmier2, "x", 150, 130, 500);
-            hideWithBounce(maimuta, "y", -200, -180, -500);
-        }
-    }
-
-    private void updateBeachScene(float temperature) {
-        if (temperature > 29 && temperature <= 31 && !backgroundImageView1.isVisible()) {
-            showWithBounce(backgroundImageView1, "y", 500, -20, 0);
-            showWithBounce(sezlong, "x", 500, 80, 100);
-            showWithBounce(soare, "y", -500, -180, -350);
-            showWithBounce(palmierPlaja, "x", -500, -130, -300);
-        }
-        if ((temperature <= 28 || temperature >= 32) && backgroundImageView1.isVisible()) {
-            hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
-            hideWithBounce(sezlong, "x", 100, 80, 500);
-            hideWithBounce(soare, "y", -200, -180, -500);
-            hideWithBounce(palmierPlaja, "x", -150, -130, -500);
-        }
-    }
-
-    private void updateDesertScene(float temperature) {
-        if (temperature >= 32 && temperature <= 34 && !backgroundImageView2.isVisible()) {
-            showWithBounce(backgroundImageView2, "y", 500, -20, 0);
-            showWithBounce(cactus1, "x", 500, 80, 100);
-            showWithBounce(cactus2, "x", -500, -100, -120);
-            showWithBounce(camila, "y", 500, 80, 100);
-        }
-        if ((temperature <= 31 || temperature >= 40) && backgroundImageView2.isVisible()) {
-            hideWithBounce(backgroundImageView2, "y", 0, -20, 500);
-            hideWithBounce(cactus1, "x", 100, 80, 500);
-            hideWithBounce(cactus2, "x", -120, -100, -500);
-            hideWithBounce(camila, "y", 100, 80, 500);
-        }
-    }
-
-    private void updateAutoFan(float temperature) {
-        if (isManualMode || serialComm == null) {
-            return;
-        }
-
-        double threshold = fanThresholdSlider.getValue();
-        boolean shouldBeOn = temperature >= threshold;
-
-        if (shouldBeOn == isFanOn) {
-            return;
-        }
-
-        try {
-            serialComm.writeByte((byte) (shouldBeOn ? '1' : '0'));
-            isFanOn = shouldBeOn;
-
-            fanToggle.setSelected(shouldBeOn);
-            fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
-        } catch (IOException e) {
-            tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
-            e.printStackTrace();
-        }
-    }
-
-    /* ===================  PDF  =================== */
+    
 
     private void generatePdfReport(Stage owner) {
         if (tempHistory.isEmpty()) {
@@ -517,86 +506,66 @@ public class MainApp extends Application {
             return;
         }
 
-        File file = chooseReportDestination(owner);
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Salvează raport PDF");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        File file = fileChooser.showSaveDialog(owner);
         if (file == null) {
             return;
         }
 
         try {
-            File chartFile = createChartImageTempFile();
-            writePdfReport(file, chartFile);
+            // Snapshot la grafic
+            WritableImage fxImage = tempChart.snapshot(null, null);
+            BufferedImage bImage = SwingFXUtils.fromFXImage(fxImage, null);
+            File chartFile = File.createTempFile("chart_temp_", ".png");
+            ImageIO.write(bImage, "png", chartFile);
+
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream(file));
+            document.open();
+
+            document.add(new Paragraph("Raport temperatura - sesiune curenta"));
+            document.add(new Paragraph(" "));
+
+            int count = tempHistory.size();
+            double avg = sumTemp / count;
+
+            document.add(new Paragraph(String.format("Numar masuratori: %d", count)));
+            document.add(new Paragraph(String.format("Temperatura minima: %.2f °C", minTemp)));
+            document.add(new Paragraph(String.format("Temperatura maxima: %.2f °C", maxTemp)));
+            document.add(new Paragraph(String.format("Temperatura medie: %.2f °C", avg)));
+            document.add(new Paragraph(" "));
+
+            // Tabel cu datele colectate
+            PdfPTable table = new PdfPTable(2);
+            table.addCell("Index");
+            table.addCell("Temperatura (°C)");
+
+            for (int i = 0; i < tempHistory.size(); i++) {
+                table.addCell(Integer.toString(i + 1));
+                table.addCell(String.format("%.2f", tempHistory.get(i)));
+            }
+
+            document.add(table);
+            document.add(new Paragraph(" "));
+
+            // Imaginea graficului
+            com.itextpdf.text.Image chartImg =
+                    com.itextpdf.text.Image.getInstance(chartFile.getAbsolutePath());
+            chartImg.scaleToFit(500, 400);
+            document.add(chartImg);
+
+            document.close();
             chartFile.deleteOnExit();
+
             tempLabel.setText("Raport PDF generat.");
         } catch (Exception e) {
             e.printStackTrace();
             tempLabel.setText("Eroare la generarea PDF-ului.");
         }
     }
-
-    private File chooseReportDestination(Stage owner) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Salvează raport PDF");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-        return fileChooser.showSaveDialog(owner);
-    }
-
-    private File createChartImageTempFile() throws IOException {
-        WritableImage fxImage = tempChart.snapshot(null, null);
-        BufferedImage bImage = SwingFXUtils.fromFXImage(fxImage, null);
-        File chartFile = File.createTempFile("chart_temp_", ".png");
-        ImageIO.write(bImage, "png", chartFile);
-        return chartFile;
-    }
-
-    private void writePdfReport(File file, File chartFile) throws Exception {
-        Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(file));
-        document.open();
-
-        document.add(new Paragraph("Raport temperatura - sesiune curenta"));
-        document.add(new Paragraph(" "));
-
-        addStatisticsParagraphs(document);
-        addTableWithMeasurements(document);
-        addChartImage(document, chartFile);
-
-        document.close();
-    }
-
-    private void addStatisticsParagraphs(Document document) throws Exception {
-        int count = tempHistory.size();
-        double avg = sumTemp / count;
-
-        document.add(new Paragraph(String.format("Numar masuratori: %d", count)));
-        document.add(new Paragraph(String.format("Temperatura minima: %.2f °C", minTemp)));
-        document.add(new Paragraph(String.format("Temperatura maxima: %.2f °C", maxTemp)));
-        document.add(new Paragraph(String.format("Temperatura medie: %.2f °C", avg)));
-        document.add(new Paragraph(" "));
-    }
-
-    private void addTableWithMeasurements(Document document) throws Exception {
-        PdfPTable table = new PdfPTable(2);
-        table.addCell("Index");
-        table.addCell("Temperatura (°C)");
-
-        for (int i = 0; i < tempHistory.size(); i++) {
-            table.addCell(Integer.toString(i + 1));
-            table.addCell(String.format("%.2f", tempHistory.get(i)));
-        }
-
-        document.add(table);
-        document.add(new Paragraph(" "));
-    }
-
-    private void addChartImage(Document document, File chartFile) throws Exception {
-        com.itextpdf.text.Image chartImg =
-                com.itextpdf.text.Image.getInstance(chartFile.getAbsolutePath());
-        chartImg.scaleToFit(500, 400);
-        document.add(chartImg);
-    }
-
-    /* ===================  ANIMAȚII UTILITARE  =================== */
 
     private void showWithBounce(Node node, String axis, double startPos, double bouncePos, double finalPos) {
         node.setVisible(true);
@@ -634,8 +603,9 @@ public class MainApp extends Application {
     private javafx.beans.property.DoubleProperty getTranslateProperty(Node node, String axis) {
         if (axis.equalsIgnoreCase("x")) {
             return node.translateXProperty();
+        } else {
+            return node.translateYProperty();
         }
-        return node.translateYProperty();
     }
 
     public static void main(String[] args) {
