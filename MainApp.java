@@ -57,7 +57,7 @@ public class MainApp extends Application {
     private ImageView backgroundImageView1;
     private ImageView sezlong;
     private ImageView soare;
-    private ImageView palmier_plaja;
+    private ImageView palmierPlaja;
     private ImageView backgroundImageView2;
     private ImageView cactus1;
     private ImageView cactus2;
@@ -247,13 +247,13 @@ public class MainApp extends Application {
         soare.setTranslateX(200);
         soare.setVisible(false);
 
-        palmier_plaja = new ImageView();
-        palmier_plaja.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
-        palmier_plaja.setFitWidth(700);
-        palmier_plaja.setPreserveRatio(true);
-        palmier_plaja.setTranslateX(500);
-        palmier_plaja.setTranslateY(-50);
-        palmier_plaja.setVisible(false);
+        palmierPlaja = new ImageView();
+        palmierPlaja.setImage(new Image("file:C:/Users/benib/Desktop/palmier1.png"));
+        palmierPlaja.setFitWidth(700);
+        palmierPlaja.setPreserveRatio(true);
+        palmierPlaja.setTranslateX(500);
+        palmierPlaja.setTranslateY(-50);
+        palmierPlaja.setVisible(false);
 
         backgroundImageView2 = new ImageView();
         backgroundImageView2.setImage(new Image("file:C:/Users/benib/Desktop/desert-ground.png"));
@@ -294,7 +294,7 @@ public class MainApp extends Application {
                 camila,
                 palmier1,
                 palmier2,
-                palmier_plaja,
+                palmierPlaja,
                 soare,
                 maimuta,
                 sezlong,
@@ -421,14 +421,14 @@ public class MainApp extends Application {
             showWithBounce(backgroundImageView1, "y", 500, -20, 0);
             showWithBounce(sezlong, "x", 500, 80, 100);
             showWithBounce(soare, "y", -500, -180, -350);
-            showWithBounce(palmier_plaja, "x", -500, -130, -300);
+            showWithBounce(palmierPlaja, "x", -500, -130, -300);
         }
 
         if ((temperature <= 28 || temperature >= 32) && backgroundImageView1.isVisible()) {
             hideWithBounce(backgroundImageView1, "y", 0, -20, 500);
             hideWithBounce(sezlong, "x", 100, 80, 500);
             hideWithBounce(soare, "y", -200, -180, -500);
-            hideWithBounce(palmier_plaja, "x", -150, -130, -500);
+            hideWithBounce(palmierPlaja, "x", -150, -130, -500);
         }
 
         if ((temperature >= 32 && temperature <= 34) && !backgroundImageView2.isVisible()) {
