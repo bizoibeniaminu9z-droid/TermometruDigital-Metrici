@@ -1,5 +1,6 @@
 package termometrudigital;
 
+
 import javafx.animation.FillTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
