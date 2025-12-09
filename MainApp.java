@@ -46,6 +46,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 public class MainApp extends Application {
 
+    // constante pentru textul butonului de ventilator
+    private static final String FAN_ON_TEXT  = "Ventilator ON";
+    private static final String FAN_OFF_TEXT = "Ventilator OFF";
+
     private SerialCommunication serialComm;
     private Label tempLabel;
     private Rectangle thermometerBar;
@@ -121,7 +125,7 @@ public class MainApp extends Application {
         thermoRow.setPadding(new Insets(0, 0, 0, 0));
 
         // Buton ventilator (manual ON/OFF)
-        fanToggle = new ToggleButton("Ventilator OFF");
+        fanToggle = new ToggleButton(FAN_OFF_TEXT);
         fanToggle.setOnAction(e -> handleFanToggle());
 
         // Buton Mod manual / Mod automat
@@ -352,7 +356,7 @@ public class MainApp extends Application {
         boolean on = fanToggle.isSelected();
         try {
             serialComm.writeByte((byte) (on ? '1' : '0'));
-            fanToggle.setText(on ? "Ventilator ON" : "Ventilator OFF");
+            fanToggle.setText(on ? FAN_ON_TEXT : FAN_OFF_TEXT);
             isFanOn = on;
         } catch (IOException e) {
             tempLabel.setText("Eroare trimitere comanda ventilator");
@@ -457,7 +461,7 @@ public class MainApp extends Application {
 
                     // actualizăm și butonul ca să vezi starea reală
                     fanToggle.setSelected(shouldBeOn);
-                    fanToggle.setText(shouldBeOn ? "Ventilator ON" : "Ventilator OFF");
+                    fanToggle.setText(shouldBeOn ? FAN_ON_TEXT : FAN_OFF_TEXT);
                 } catch (IOException e) {
                     tempLabel.setText("Eroare trimitere comanda ventilator (auto)");
                     e.printStackTrace();
